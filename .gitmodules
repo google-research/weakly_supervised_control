@@ -1,0 +1,3 @@
+[submodule "dependencies/multiworld"]
+	path = dependencies/multiworld
+	url = https://github.com/vitchyr/multiworld.git

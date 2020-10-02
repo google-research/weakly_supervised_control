@@ -1,0 +1,103 @@
+{
+    # Environment
+    'env': {
+        'env_id': 'SawyerPickupRandomLightsEnv-v1',
+        'imsize': 48,
+        'max_path_length': 50,
+        'train_dataset': 'gs://weakly-supervised-control/datasets/SawyerPickupRandomLightsEnv-v1-n512-hand_x-hand_y-hand_z-obj_x-obj_y-obj_z-light.npz',
+        'eval_dataset': 'gs://weakly-supervised-control/datasets/SawyerPickupRandomLightsEnv-v1-n512-hand_x-hand_y-hand_z-obj_x-obj_y-obj_z-light-eval.npz',
+        'vae_wrapped_env_kwargs': {
+            'sample_from_true_prior': True
+        },
+        'disentanglement_factors': 'r=1,2,4,5,6',
+
+        'disentanglement_model_path': 'gs://weakly-supervised-control/saved_models/SawyerPickupRandomLightsEnv-v1-n512-hand_x-hand_y-hand_z-obj_x-obj_y-obj_z-light-r=1,2,4,5,6-100000-20200201-020945',
+        # 'disentanglement_model_path': 'gs://weakly-supervised-control/saved_models/SawyerPickupRandomLightsEnv-v1-n512-hand_x-hand_y-hand_z-obj_x-obj_y-obj_z-light-r=1,2,4,5,6-100000-20200201-163227',
+        # 'disentanglement_model_path': 'gs://weakly-supervised-control/saved_models/SawyerPickupRandomLightsEnv-v1-n512-hand_x-hand_y-hand_z-obj_x-obj_y-obj_z-light-r=1,2,4,5,6-100000-20200201-173226',
+        # 'disentanglement_model_path': 'gs://weakly-supervised-control/saved_models/SawyerPickupRandomLightsEnv-v1-n512-hand_x-hand_y-hand_z-obj_x-obj_y-obj_z-light-r=1,2,4,5,6-100000-20200201-224849',
+        # 'disentanglement_model_path': 'gs://weakly-supervised-control/saved_models/SawyerPickupRandomLightsEnv-v1-n512-hand_x-hand_y-hand_z-obj_x-obj_y-obj_z-light-r=1,2,4,5,6-100000-20200201-234913',
+    },
+
+    # Disentangled model training
+    'disentanglement': {
+        'batch_size': 64,
+        'iterations': int(1e5),
+        'model_kwargs': {
+            'n_dim': 0,
+            'enc_lr': 1e-3,
+            'dis_lr': 1e-3,
+            'gen_lr': 1e-3,
+            'enc_width': 1,
+            'dis_width': 2,
+        },
+    },
+
+    # HER parameters
+    'her_variant': {
+        'exploration_goal_sampler': 'observation_space',
+        'desired_goal_key': 'disentangled_desired_goal',
+        'disentanglement_indices': (4, 5),
+        'observation_key': 'latent_observation',
+        'power': 0,
+        'reward_params': {
+            'type': 'disentangled_distance'
+        },
+        'fraction_goals_env_goals': 0.3,
+        'fraction_goals_rollout_goals': 0.2,
+        'representation_size': 256,
+    },
+
+    # SAC parameters
+    'algorithm': 'Skew-Fit',
+    'algo_kwargs': {
+        'batch_size': 1024,
+        'min_num_steps_before_training': 10000,
+        'num_epochs': 1000,
+        'num_eval_steps_per_epoch': 500,
+        'num_expl_steps_per_train_loop': 500,
+        'num_trains_per_train_loop': 1000,
+        'oracle_data': False,
+        'parallel_vae_train': False,
+        'vae_save_period': 50,
+        'vae_training_schedule': 'rlkit.torch.vae.vae_schedules.custom_schedule',
+    },
+    'twin_sac_trainer_kwargs': {
+        'discount': 0.99,
+        'reward_scale': 1,
+        'soft_target_tau': 0.001,
+        'target_update_period': 1,
+        'use_automatic_entropy_tuning': True
+    },
+    'hidden_sizes': (400, 300),
+    'save_video': True,
+    'save_video_period': 50,
+    'replay_buffer_kwargs': {
+        'max_size': 100000,
+        'priority_function_kwargs': {
+            'decoder_distribution': 'gaussian_identity_variance',
+            'num_latents_to_sample': 10,
+            'sampling_method': 'importance_sampling'
+        },
+        'start_skew_epoch': 10,
+        'vae_priority_type': 'vae_prob'
+    },
+
+    # VAE parameters
+    'vae': {
+        'vae_kwargs': {
+            'decoder_output_activation': 'rlkit.pythonplusplus.identity',
+            'decoder_distribution': 'gaussian_identity_variance',
+            'input_channels': 3,
+        },
+        'pretrain_kwargs': {
+            'num_epochs': 1000,
+            'save_period': 100,
+            'test_p': 0.1,
+        },
+        'vae_trainer_kwargs': {
+            'beta': 30,
+            'lr': 0.001,
+            'pred_loss_coeff': 0,
+        },
+    },
+}

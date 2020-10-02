@@ -1,0 +1,108 @@
+{
+    #'saved_experiment_dir': '/tmp/weakly_supervised_control/train_wsc/HardwareRobotEnv-v1_2020_03_17_00_42_02_0000--s-0/',
+    #'saved_experiment_dir': '/tmp/weakly_supervised_control/train_wsc/HardwareRobotEnv-v1_2020_03_17_08_40_12_0000--s-0/',
+    #'saved_experiment_dir': '/tmp/weakly_supervised_control/train_wsc/HardwareRobotEnv-v1_2020_03_17_11_00_10_0000--s-0/',
+    #'saved_experiment_dir': '/tmp/weakly_supervised_control/train_wsc/HardwareRobotEnv-v1_2020_03_17_17_34_32_0000--s-0/',
+
+    # Environment
+    'env': {
+        'env_id': 'HardwareRobotEnv-v1',
+        'imsize': 48,
+        'max_path_length': 100,
+        'train_dataset': 'gs://weakly-supervised-control/datasets/robot_observations-2020-02-29-16:07:52-n1029.npz',
+        'eval_dataset': 'gs://weakly-supervised-control/datasets/robot_observations-2020-02-29-16:07:52-n256.npz',
+        'stack_images': True,
+        'vae_wrapped_env_kwargs': {
+            'sample_from_true_prior': True
+        },
+        'disentanglement_factors': 'r=0,1,2,3,4,5,6,7,8,9,10,11,12',
+
+        # n_dim: 1, enc_lr: 1e-3, dis_lr: 1e-5, gen_lr: 1e-3, enc_width: 3, dis_width: 2
+        'disentanglement_model_path': 'gs://brain-adept-gs/users/lslee/job/20200229-16h32m-output/job-0/robot_observations-2020-02-29-16:07:52-n1029-r=0,1,2,3,4,5,6,7,8,9,10,11,12-20200301-003521/ckptdir',
+    },
+
+    # HER parameters
+    'her_variant': {
+            'exploration_goal_sampler': 'observation_space',
+            'desired_goal_key': 'disentangled_desired_goal',
+            #'disentanglement_indices': (3, 4,),
+            'disentanglement_indices': (3,4,5,6,7,8,9,10,11,12,),
+            'observation_key': 'latent_observation',
+            'power': 0,
+            'reward_params': {
+                'type': 'disentangled_distance'
+            },
+            'fraction_goals_env_goals': 0.4,
+            'fraction_goals_rollout_goals': 0.2,
+            'representation_size': 256,
+    },
+
+    # Disentangled model training
+    'disentanglement': {
+        'batch_size': 64,
+        'iterations': int(1e5),
+        'iter_log': 100,
+        'model_kwargs': {
+            'n_dim': 1,
+            'enc_lr': 1e-3,
+            'dis_lr': 1e-5,
+            'gen_lr': 1e-3,
+            'enc_width': 3,
+            'dis_width': 2,
+        },
+    },
+
+    # SAC parameters
+    'algorithm': 'Skew-Fit',
+    'algo_kwargs': {
+        'batch_size': 1024,
+        'min_num_steps_before_training': 2000,
+        'num_epochs': 1000,
+        'num_eval_steps_per_epoch': 100,
+        'num_expl_steps_per_train_loop': 500,
+        'num_trains_per_train_loop': 1000,
+        'oracle_data': False,
+        'parallel_vae_train': False,
+        'vae_save_period': 50,
+        'vae_training_schedule': 'rlkit.torch.vae.vae_schedules.custom_schedule_2',
+    },
+    'twin_sac_trainer_kwargs': {
+        'discount': 0.99,
+        'reward_scale': 1,
+        'soft_target_tau': 0.001,
+        'target_update_period': 1,
+        'use_automatic_entropy_tuning': True
+    },
+    'hidden_sizes': (400, 300),
+    'save_video': True,
+    'save_video_period': 50,
+    'replay_buffer_kwargs': {
+        'max_size': 100000,
+        'priority_function_kwargs': {
+            'decoder_distribution': 'gaussian_identity_variance',
+            'num_latents_to_sample': 10,
+            'sampling_method': 'importance_sampling'
+        },
+        'start_skew_epoch': 10,
+        'vae_priority_type': 'vae_prob'
+    },
+
+    # VAE parameters
+    'vae': {
+        'vae_kwargs': {
+            'decoder_output_activation': 'rlkit.pythonplusplus.identity',
+            'decoder_distribution': 'gaussian_identity_variance',
+            'input_channels': 3,
+        },
+        'pretrain_kwargs': {
+            'num_epochs': 100,
+            'save_period': 100,
+            'test_p': 0.1,
+        },
+        'vae_trainer_kwargs': {
+            'beta': 20,
+            'lr': 0.001,
+            'pred_loss_coeff': 0,
+        },
+    },
+}

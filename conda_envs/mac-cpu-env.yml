@@ -1,0 +1,41 @@
+name: wsc_env
+channels:
+- pytorch
+- defaults
+dependencies:
+- pip
+- python=3.7
+- lockfile
+- pytorch=1.0
+- tabulate=0.8.3
+- termcolor
+- torchvision=0.2.1
+- absl-py
+- pyparsing
+- swig
+- pip:
+  - gtimer==1.0.0b5
+  - click
+  - gym==0.10.8
+  - mujoco-py==2.0.2.5
+  - pip==18.0
+  - joblib==0.13.0
+  - pyyaml==3.12
+  - tqdm==4.25.0
+  - wheel==0.30.0
+  - scipy
+  - tensorboardX
+  - opencv-python==4.1.0.25
+  - "--editable=git+git://github.com/vitchyr/rlkit.git@90195b24604f513403e4d0fe94db372d16700523#egg=rlkit-master"
+  - pandas
+  - pillow < 7
+  - seaborn
+  - scikit-learn
+  - box2d-py
+  - boto3
+  - tensorflow==1.15.0rc2
+  - tensorflow_probability==0.8.0
+  #- tf-agents-nightly
+  - gin==0.1.1
+  - gdown
+
