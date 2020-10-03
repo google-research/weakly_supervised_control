@@ -60,7 +60,7 @@ By default, the datasets are saved to this location:
 ```
 DATA_DIR=/tmp/weakly_supervised_control/datasets
 ```
-![alt text](images/sawyer_envs.png)
+![alt text](images/sawyer-envs.png)
 
 ### Disentangled Representation Training
 
